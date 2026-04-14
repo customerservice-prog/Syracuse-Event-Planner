@@ -1,76 +1,104 @@
 import { create } from 'zustand';
+import {
+  type EventType,
+  type PackageTier,
+  type ServiceSelection,
+  calculateTotals,
+} from '@/lib/pricing-math';
 
-export type EventType = 'wedding' | 'corporate' | 'birthday' | 'social' | 'graduation' | 'other';
-export type PackageTier = 'essential' | 'signature' | 'premier';
-
-interface Services {
-  venue: boolean; catering: boolean; photography: boolean; videography: boolean;
-  decor: boolean; entertainment: boolean; security: boolean; transportation: boolean;
-}
+export type { EventType, PackageTier };
+export type { ServiceSelection as Services };
 
 export interface QuoteState {
   eventType: EventType;
   guestCount: number;
-  services: Services;
+  services: ServiceSelection;
   selectedPackage: PackageTier | null;
-  subtotal: number; tax: number; serviceFee: number; total: number;
-  contactEmail: string; contactName: string;
+  subtotal: number;
+  tax: number;
+  serviceFee: number;
+  total: number;
+  contactEmail: string;
+  contactName: string;
   step: number;
   setEventType: (t: EventType) => void;
   setGuestCount: (n: number) => void;
-  toggleService: (k: keyof Services) => void;
+  toggleService: (k: keyof ServiceSelection) => void;
   selectPackage: (t: PackageTier) => void;
   setContact: (name: string, email: string) => void;
-  nextStep: () => void; prevStep: () => void;
-  calculateQuote: () => void; reset: () => void;
+  nextStep: () => void;
+  prevStep: () => void;
+  calculateQuote: () => void;
+  reset: () => void;
 }
 
-const PRICING: Record<keyof Services, {base:number;perGuest:number}> = {
-  venue:{base:2500,perGuest:5}, catering:{base:0,perGuest:45}, photography:{base:1800,perGuest:0},
-  videography:{base:1500,perGuest:0}, decor:{base:800,perGuest:8}, entertainment:{base:1200,perGuest:0},
-  security:{base:600,perGuest:2}, transportation:{base:500,perGuest:3},
+const defaultServices: ServiceSelection = {
+  venue: true,
+  catering: true,
+  photography: false,
+  videography: false,
+  decor: false,
+  entertainment: false,
+  security: false,
+  transportation: false,
 };
-
-const EVENT_MULT: Record<EventType,number> = {
-  wedding:1.4, corporate:1.1, birthday:0.9, social:1.0, graduation:0.95, other:1.0
-};
-
-const PKG_MULT: Record<PackageTier,number> = { essential:1.0, signature:1.25, premier:1.6 };
-const SYRACUSE_TAX = 0.08;
-
-function calcSubtotal(services: Services, guestCount: number, eventType: EventType, pkg: PackageTier | null): number {
-  let sub = 0;
-  for (const [key, enabled] of Object.entries(services)) {
-    if (enabled) {
-      const p = PRICING[key as keyof Services];
-      sub += p.base + p.perGuest * guestCount;
-    }
-  }
-  return Math.round(sub * EVENT_MULT[eventType] * PKG_MULT[pkg ?? 'signature']);
-}
 
 export const useQuoteStore = create<QuoteState>((set, get) => ({
-  eventType: 'wedding', guestCount: 100,
-  services: { venue:true, catering:true, photography:false, videography:false, decor:false, entertainment:false, security:false, transportation:false },
+  eventType: 'wedding',
+  guestCount: 100,
+  services: { ...defaultServices },
   selectedPackage: 'signature',
-  subtotal: 0, tax: 0, serviceFee: 0, total: 0,
-  contactEmail: '', contactName: '', step: 1,
-  setEventType: (eventType) => { set({ eventType }); get().calculateQuote(); },
-  setGuestCount: (guestCount) => { set({ guestCount }); get().calculateQuote(); },
+  subtotal: 0,
+  tax: 0,
+  serviceFee: 0,
+  total: 0,
+  contactEmail: '',
+  contactName: '',
+  step: 1,
+  setEventType: (eventType) => {
+    set({ eventType });
+    get().calculateQuote();
+  },
+  setGuestCount: (guestCount) => {
+    set({ guestCount });
+    get().calculateQuote();
+  },
   toggleService: (k) => {
     const services = { ...get().services, [k]: !get().services[k] };
-    set({ services }); get().calculateQuote();
+    set({ services });
+    get().calculateQuote();
   },
-  selectPackage: (selectedPackage) => { set({ selectedPackage }); get().calculateQuote(); },
+  selectPackage: (selectedPackage) => {
+    set({ selectedPackage });
+    get().calculateQuote();
+  },
   setContact: (contactName, contactEmail) => set({ contactName, contactEmail }),
-  nextStep: () => set(s => ({ step: Math.min(s.step+1, 5) })),
-  prevStep: () => set(s => ({ step: Math.max(s.step-1, 1) })),
+  nextStep: () => set((s) => ({ step: Math.min(s.step + 1, 5) })),
+  prevStep: () => set((s) => ({ step: Math.max(s.step - 1, 1) })),
   calculateQuote: () => {
     const { services, guestCount, eventType, selectedPackage } = get();
-    const subtotal = calcSubtotal(services, guestCount, eventType, selectedPackage);
-    const tax = Math.round(subtotal * SYRACUSE_TAX);
-    const serviceFee = Math.round(subtotal * 0.05);
-    set({ subtotal, tax, serviceFee, total: subtotal + tax + serviceFee });
+    const { subtotal, tax, serviceFee, total } = calculateTotals(
+      services,
+      guestCount,
+      eventType,
+      selectedPackage,
+    );
+    set({ subtotal, tax, serviceFee, total });
   },
-  reset: () => set({ step:1, selectedPackage:null, subtotal:0, tax:0, serviceFee:0, total:0 }),
+  reset: () => {
+    set({
+      step: 1,
+      eventType: 'wedding',
+      guestCount: 100,
+      services: { ...defaultServices },
+      selectedPackage: 'signature',
+      contactEmail: '',
+      contactName: '',
+      subtotal: 0,
+      tax: 0,
+      serviceFee: 0,
+      total: 0,
+    });
+    get().calculateQuote();
+  },
 }));

@@ -1,11 +1,20 @@
 import type { Metadata } from 'next';
+import PricingOverview from '@/components/pricing/PricingOverview';
 import QuoteCalculator from '@/components/pricing/QuoteCalculator';
 
 export const metadata: Metadata = {
-  title: 'Get a Quote | Syracuse Event Planner',
-  description: 'Instant pricing for your Syracuse event. Weddings, corporate, social - get your custom quote in minutes.',
+  title: 'Pricing & Quotes | Syracuse Event Planner',
+  description:
+    'Syracuse and Onondaga County event pricing with 8% tax, transparent packages, and a live calculator for weddings, corporate events, and galas.',
 };
 
 export default function PricingPage() {
-  return <QuoteCalculator />;
+  return (
+    <>
+      <PricingOverview />
+      <div id="calculator" className="scroll-mt-24">
+        <QuoteCalculator />
+      </div>
+    </>
+  );
 }

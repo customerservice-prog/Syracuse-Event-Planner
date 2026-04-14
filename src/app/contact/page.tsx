@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Phone, Mail, MapPin, Clock, Send, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { siteImages } from '@/lib/site-images';
 import {
   sitePhoneDisplay,
   sitePhoneTel,
@@ -46,7 +48,7 @@ export default function ContactPage() {
   };
 
   const ic =
-    'w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-gold-400';
+    'w-full px-4 py-3 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-gold-400';
 
   const contactRows = [
     {
@@ -67,11 +69,19 @@ export default function ContactPage() {
 
   return (
     <div className="pt-24">
-      <section className="section-padding text-center bg-navy-950 relative overflow-hidden">
-        <div className="absolute inset-0 hero-pattern" />
+      <section className="section-padding text-center relative overflow-hidden min-h-[40vh] flex items-center">
+        <Image
+          src={siteImages.contactBg}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-navy-950/90 via-navy-950/85 to-navy-950" />
         <div className="relative z-10 container-max">
-          <h1 className="font-display text-5xl font-bold text-white mb-4">Contact Us</h1>
-          <p className="text-white/50 text-xl">We respond within 2 hours.</p>
+          <p className="text-gold-400 text-sm uppercase tracking-[0.2em] mb-3">Get in touch</p>
+          <h1 className="font-display text-5xl md:text-6xl font-bold text-white mb-4">Contact Us</h1>
+          <p className="text-white/55 text-xl max-w-xl mx-auto">We respond within 2 hours — Syracuse time.</p>
         </div>
       </section>
       <section className="section-padding bg-navy-950">
@@ -97,7 +107,7 @@ export default function ContactPage() {
               ))}
             </div>
           </div>
-          <div className="glass-card p-8">
+          <div className="glass-card-strong p-8 border-white/10">
             {submitted ? (
               <div className="text-center py-12">
                 <CheckCircle className="w-16 h-16 text-gold-400 mx-auto mb-4" />
