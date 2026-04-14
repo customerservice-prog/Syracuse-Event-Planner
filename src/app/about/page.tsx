@@ -1,9 +1,18 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, Shield, Award, Heart, ArrowRight, CheckCircle } from 'lucide-react';
 import { siteImages } from '@/lib/site-images';
+import { pageMetadata } from '@/lib/seo-metadata';
+import FaqJsonLd from '@/components/seo/FaqJsonLd';
 
-export const metadata = { title: 'About | Syracuse Event Planner' };
+export const metadata: Metadata = pageMetadata({
+  title: 'About Our Syracuse Event Planning Team',
+  description:
+    'Meet the Syracuse Event Planner team: CNY experts for weddings, corporate productions, and fundraisers. Insured, permit-savvy, and rooted in Onondaga County.',
+  path: '/about',
+  keywords: ['about Syracuse Event Planner', 'CNY wedding planners', 'Syracuse event company'],
+});
 
 export default function AboutPage() {
   const team = [
@@ -52,6 +61,7 @@ export default function AboutPage() {
   ];
   return (
     <div className="pt-24">
+      <FaqJsonLd faqs={faqs.map((x) => ({ question: x.q, answer: x.a }))} />
       <section className="relative min-h-[55vh] flex items-center section-padding overflow-hidden">
         <Image
           src={siteImages.heroAbout}

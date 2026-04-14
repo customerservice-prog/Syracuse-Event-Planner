@@ -1,9 +1,22 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight, CheckCircle, Heart, Briefcase, PartyPopper, Mic, Camera, Utensils } from 'lucide-react';
 import { siteImages } from '@/lib/site-images';
+import { pageMetadata } from '@/lib/seo-metadata';
 
-export const metadata = { title: 'Services | Syracuse Event Planner' };
+export const metadata: Metadata = pageMetadata({
+  title: 'Wedding, Corporate & Gala Services in Syracuse NY',
+  description:
+    'Event services in Syracuse and Onondaga County: weddings, corporate meetings, galas, photography, catering, and full planning. Serving CNY from the Oncenter to Skaneateles.',
+  path: '/services',
+  keywords: [
+    'Syracuse wedding services',
+    'corporate event planning CNY',
+    'gala planner Syracuse',
+    'Syracuse catering events',
+  ],
+});
 
 export default function ServicesPage() {
   const services = [
