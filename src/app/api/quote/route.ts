@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { sendTransactionalEmail } from '@/lib/send-email';
+import { logQuoteLead } from '@/lib/lead-log';
+import { isResendConfigured, sendTransactionalEmail } from '@/lib/send-email';
 
 const servicesSchema = z.object({
   venue: z.boolean(),
@@ -43,10 +44,28 @@ export async function POST(req: Request) {
   }
 
   const d = parsed.data;
-  const enabled = Object.entries(d.services)
+  const enabledServices = Object.entries(d.services)
     .filter(([, v]) => v)
     .map(([k]) => k)
     .join(', ');
+
+  logQuoteLead({
+    contactName: d.contactName,
+    contactEmail: d.contactEmail,
+    eventType: d.eventType,
+    guestCount: d.guestCount,
+    selectedPackage: d.selectedPackage,
+    services: d.services,
+    enabledServices,
+    subtotal: d.subtotal,
+    tax: d.tax,
+    serviceFee: d.serviceFee,
+    total: d.total,
+  });
+
+  if (!isResendConfigured()) {
+    return NextResponse.json({ ok: true, delivery: 'log' as const });
+  }
 
   const html = `
     <h2>New quote request</h2>
@@ -54,7 +73,7 @@ export async function POST(req: Request) {
     <p><strong>Email:</strong> ${escapeHtml(d.contactEmail)}</p>
     <p><strong>Event:</strong> ${escapeHtml(d.eventType)} · <strong>Guests:</strong> ${d.guestCount}</p>
     <p><strong>Package:</strong> ${escapeHtml(d.selectedPackage ?? '—')}</p>
-    <p><strong>Services:</strong> ${escapeHtml(enabled || 'none selected')}</p>
+    <p><strong>Services:</strong> ${escapeHtml(enabledServices || 'none selected')}</p>
     <p><strong>Subtotal:</strong> $${d.subtotal} · <strong>Tax:</strong> $${d.tax} · <strong>Fee:</strong> $${d.serviceFee}</p>
     <p><strong>Total:</strong> $${d.total}</p>
   `;
@@ -63,12 +82,11 @@ export async function POST(req: Request) {
     `Quote: ${d.contactName} (${d.eventType})`,
     html,
   );
-
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 503 });
+    return NextResponse.json({ error: result.error }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, delivery: 'email' as const });
 }
 
 function escapeHtml(s: string) {

@@ -1,3 +1,12 @@
+export function isResendConfigured(): boolean {
+  return Boolean(
+    process.env.RESEND_API_KEY &&
+      process.env.CONTACT_INBOX_EMAIL &&
+      process.env.RESEND_FROM_EMAIL,
+  );
+}
+
+/** Sends via Resend only when RESEND_* / CONTACT_INBOX_EMAIL are all set. */
 export async function sendTransactionalEmail(
   subject: string,
   html: string,
@@ -7,11 +16,7 @@ export async function sendTransactionalEmail(
   const from = process.env.RESEND_FROM_EMAIL;
 
   if (!apiKey || !to || !from) {
-    return {
-      ok: false,
-      error:
-        'Email is not configured. Set RESEND_API_KEY, CONTACT_INBOX_EMAIL, and RESEND_FROM_EMAIL in Railway variables.',
-    };
+    return { ok: false, error: 'Resend is not configured.' };
   }
 
   const response = await fetch('https://api.resend.com/emails', {

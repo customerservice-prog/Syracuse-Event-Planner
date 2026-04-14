@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
-import { sendTransactionalEmail } from '@/lib/send-email';
+import { logContactLead } from '@/lib/lead-log';
+import { isResendConfigured, sendTransactionalEmail } from '@/lib/send-email';
 
 const bodySchema = z.object({
   name: z.string().min(1).max(200),
@@ -29,6 +30,12 @@ export async function POST(req: Request) {
 
   const { name, email, phone, eventType, date, message } = parsed.data;
 
+  logContactLead({ name, email, phone, eventType, date, message });
+
+  if (!isResendConfigured()) {
+    return NextResponse.json({ ok: true, delivery: 'log' as const });
+  }
+
   const html = `
     <h2>New contact — Syracuse Event Planner</h2>
     <p><strong>Name:</strong> ${escapeHtml(name)}</p>
@@ -40,16 +47,12 @@ export async function POST(req: Request) {
     <pre style="white-space:pre-wrap;font-family:inherit">${escapeHtml(message)}</pre>
   `;
 
-  const result = await sendTransactionalEmail(
-    `Contact: ${name}`,
-    html,
-  );
-
+  const result = await sendTransactionalEmail(`Contact: ${name}`, html);
   if (!result.ok) {
-    return NextResponse.json({ error: result.error }, { status: 503 });
+    return NextResponse.json({ error: result.error }, { status: 502 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, delivery: 'email' as const });
 }
 
 function escapeHtml(s: string) {
