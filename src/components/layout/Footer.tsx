@@ -1,5 +1,11 @@
 import Link from 'next/link';
 import { Star, Phone, Mail, MapPin, Instagram, Facebook, Linkedin } from 'lucide-react';
+import {
+  sitePhoneDisplay,
+  sitePhoneTel,
+  siteEmail,
+  siteAddress,
+} from '@/lib/site-public';
 
 export default function Footer() {
   return (
@@ -15,9 +21,22 @@ export default function Footer() {
             </Link>
             <p className="text-white/60 text-sm leading-relaxed mb-6">CNY&apos;s premier event planning company.</p>
             <div className="space-y-2">
-              <div className="flex items-center gap-3 text-white/60 text-sm"><Phone className="w-4 h-4 text-gold-400" /><span>(315) 555-0192</span></div>
-              <div className="flex items-center gap-3 text-white/60 text-sm"><Mail className="w-4 h-4 text-gold-400" /><span>hello@syracuseevents.com</span></div>
-              <div className="flex items-center gap-3 text-white/60 text-sm"><MapPin className="w-4 h-4 text-gold-400" /><span>300 Salina St, Syracuse, NY 13202</span></div>
+              <div className="flex items-center gap-3 text-white/60 text-sm">
+                <Phone className="w-4 h-4 text-gold-400" />
+                <a href={`tel:${sitePhoneTel}`} className="hover:text-gold-400 transition-colors">
+                  {sitePhoneDisplay}
+                </a>
+              </div>
+              <div className="flex items-center gap-3 text-white/60 text-sm">
+                <Mail className="w-4 h-4 text-gold-400" />
+                <a href={`mailto:${siteEmail}`} className="hover:text-gold-400 transition-colors">
+                  {siteEmail}
+                </a>
+              </div>
+              <div className="flex items-center gap-3 text-white/60 text-sm">
+                <MapPin className="w-4 h-4 text-gold-400" />
+                <span>{siteAddress}</span>
+              </div>
             </div>
           </div>
 
@@ -60,4 +79,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-      }
+}

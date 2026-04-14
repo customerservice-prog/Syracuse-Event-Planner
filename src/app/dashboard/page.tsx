@@ -1,5 +1,10 @@
 import { BarChart3, Users, Calendar, DollarSign, TrendingUp, Clock, CheckCircle, AlertCircle } from 'lucide-react';
-export const metadata = { title: 'Dashboard | Syracuse Event Planner' };
+import { format } from 'date-fns';
+
+export const metadata = {
+  title: 'Dashboard | Syracuse Event Planner',
+  description: 'Demo organizer dashboard with sample data.',
+};
 function fmt(n: number) { return new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:0}).format(n); }
 const stats = [
   {icon:Calendar,label:'Active Events',value:'12',trend:'+3 this month',color:'text-blue-400',bg:'from-blue-500/20'},
@@ -16,13 +21,17 @@ const events = [
 ];
 const sc: Record<string,string> = {confirmed:'text-emerald-400 bg-emerald-400/10',planning:'text-gold-400 bg-gold-400/10',pending:'text-orange-400 bg-orange-400/10'};
 export default function DashboardPage() {
+  const today = format(new Date(), 'MMMM d, yyyy');
   return (
     <div className="pt-24 pb-16">
       <section className="section-padding bg-navy-950">
         <div className="container-max">
+          <p className="mb-6 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/60">
+            Preview only: metrics and events are sample data until accounts and bookings are connected.
+          </p>
           <div className="flex items-center justify-between mb-10">
             <div><p className="text-gold-400 text-sm uppercase tracking-widest mb-1">Organizer Portal</p><h1 className="font-display text-4xl font-bold text-white">Dashboard</h1></div>
-            <div className="text-right"><div className="text-white/40 text-sm">April 13, 2026</div><div className="text-white font-medium">Welcome back, Alicia</div></div>
+            <div className="text-right"><div className="text-white/40 text-sm">{today}</div><div className="text-white font-medium">Welcome back, Alicia</div></div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
             {stats.map(({icon:Icon,label,value,trend,color,bg}) => (
@@ -61,4 +70,4 @@ export default function DashboardPage() {
       </section>
     </div>
   );
-   }
+}

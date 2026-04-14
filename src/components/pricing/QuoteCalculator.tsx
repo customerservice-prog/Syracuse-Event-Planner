@@ -28,10 +28,38 @@ const packages: {tier:PackageTier;name:string;features:string[]}[] = [
 export default function QuoteCalculator() {
   const s = useQuoteStore();
 
-  const handleSubmit = () => {
-    if (!s.contactName || !s.contactEmail) { toast.error('Please fill your name and email.'); return; }
-    toast.success('Quote submitted!', { description: `Est. total: ${fmt(s.total)}` });
-    s.reset();
+  const handleSubmit = async () => {
+    if (!s.contactName || !s.contactEmail) {
+      toast.error('Please fill your name and email.');
+      return;
+    }
+    try {
+      const res = await fetch('/api/quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventType: s.eventType,
+          guestCount: s.guestCount,
+          services: s.services,
+          selectedPackage: s.selectedPackage,
+          subtotal: s.subtotal,
+          tax: s.tax,
+          serviceFee: s.serviceFee,
+          total: s.total,
+          contactName: s.contactName,
+          contactEmail: s.contactEmail,
+        }),
+      });
+      const data = (await res.json()) as { error?: string };
+      if (!res.ok) {
+        toast.error(data.error ?? 'Could not submit quote.');
+        return;
+      }
+      toast.success('Quote submitted!', { description: `Est. total: ${fmt(s.total)}` });
+      s.reset();
+    } catch {
+      toast.error('Network error. Try again shortly.');
+    }
   };
 
   const ic = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:border-gold-400";
@@ -202,4 +230,4 @@ export default function QuoteCalculator() {
       </div>
     </div>
   );
-  }
+}
